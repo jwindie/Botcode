@@ -7,7 +7,6 @@ import playground.ui.Constraint;
 import playground.ui.Element;
 import playground.ui.ElementStack;
 
-
 public class TextEditor extends Window {
 
   public enum EnumeratedKeyCode {
@@ -19,7 +18,8 @@ public class TextEditor extends Window {
     TAB,
     LEFT,
     RIGHT,
-    CTRL
+    CTRL,
+    SHIFT
   }
 
   final static String regexKeyMatch = "[A-Za-z0-9 !\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~]";
@@ -302,18 +302,22 @@ public class TextEditor extends Window {
     else if (keyCode == RIGHT) eKeyCode = EnumeratedKeyCode.RIGHT;
     else if (keyCode == TAB) eKeyCode = EnumeratedKeyCode.TAB;
     else if (keyCode == CONTROL) eKeyCode = EnumeratedKeyCode.CTRL;
+    else if (keyCode == SHIFT) eKeyCode = EnumeratedKeyCode.SHIFT;
+    // else if (keyCode == META
 
     if (eKeyCode != EnumeratedKeyCode.UNKNOWN) {
       System.out.println(eKeyCode);
+      // System.out.println((int)key);
       handleCodedKey(eKeyCode);
       keyIsHeld = true;
     }
     else if(String.valueOf(key).matches(regexKeyMatch)) {
-      // System.out.println(key);
+      System.out.println(key);
       typeChar(key);
       keyIsHeld = true;
     }
     else {
+      System.out.println((int) key);
       //unsupported keys
       //play sound or soemthing
     }
