@@ -1,0 +1,61 @@
+DiffuseR is a small drawing program that allows you to paint some reaction diffusion style artwork. 
+It will allow for:
+- layers??? (why if these are flat images?)
+    - enable and disable layers
+    - reorder layers
+    - delete / add layers
+- brushes
+    - size
+    - colors
+    - falloff settings
+    - stamps
+    - painting wobble (noise offset from mouse position);
+    - smooth brush strokes
+    - shift to keep straight
+- paintbucket
+- eyedropper
+- symmetry 
+    - axis based
+    - custom axis
+    - radial
+    - symmetry stacking
+    - formula based
+- undo and redo
+- export image
+- export layers
+- save and load
+- theme
+- larger canvases for large hi res images
+- draw vertices and then render them as pixel perfect curves
+
+CODE STYLE:
+Diffuser is written in java for Windows (maybe mac). 
+It must be commented heavily as its my first java application.
+
+
+WHAT DOES THE UI ACTUALY NEED TO BE ABLE TO DO?
+- Support images
+- Highlight, click, press
+- Object hierarchy (for disabling and enabling interfaces
+- rendering to separate graphics objetcs
+- Copy paste
+- movement, lerping easing out
+- dragging
+- constrain
+- sliders
+- color picking and HSB wheel
+- Tooltip
+- input actions
+
+-idea to have user create shape based guide lines that the cursor will snap to allowing the
+  user to draw lines that are crisp and mathematically based.
+    -create the shape and move its position around and its size and rotation
+    -when close enough to the bounds of the spape (the line) snap the cursor
+
+- have animation options like rotation and scaling (sine based, nothing complex)
+- render to a gif or video?
+
+
+WHAT IS DOESNT NEED TO DO
+- keep it fucking simple dummy
+- 
