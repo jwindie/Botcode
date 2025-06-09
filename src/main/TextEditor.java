@@ -18,7 +18,8 @@ public class TextEditor extends Window {
     DOWN,
     TAB,
     LEFT,
-    RIGHT
+    RIGHT,
+    CTRL
   }
 
   final static String regexKeyMatch = "[A-Za-z0-9 !\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~]";
@@ -300,9 +301,10 @@ public class TextEditor extends Window {
     else if (keyCode == LEFT) eKeyCode = EnumeratedKeyCode.LEFT;
     else if (keyCode == RIGHT) eKeyCode = EnumeratedKeyCode.RIGHT;
     else if (keyCode == TAB) eKeyCode = EnumeratedKeyCode.TAB;
+    else if (keyCode == CONTROL) eKeyCode = EnumeratedKeyCode.CTRL;
 
     if (eKeyCode != EnumeratedKeyCode.UNKNOWN) {
-      // System.out.println(eKeyCode);
+      System.out.println(eKeyCode);
       handleCodedKey(eKeyCode);
       keyIsHeld = true;
     }
@@ -389,7 +391,7 @@ public class TextEditor extends Window {
       }
       //there is a line below
       else {
-        lines.add(lineIndex + 1, stringBuilder);
+        lines.add(lineIndex + 1, new StringBuilder());
         lineIndex ++;
         columnIndex = 0;
       }
@@ -397,15 +399,19 @@ public class TextEditor extends Window {
     //if we are in the mid of a line...
     else {
       var line = lines.get(lineIndex);
+
+      System.out.println("Line return mid line...");
       String newLine = line.substring(columnIndex, line.length());
+      System.out.println(newLine);
       line.delete(columnIndex, line.length());
 
       //insert a new line
       lines.add(lineIndex + 1, new StringBuilder(newLine));
+
       lineIndex ++;
       columnIndex = 0;
-      rebuildOutputString();
     }
+    rebuildOutputString();
   }
 
   private void handleCodedKey (EnumeratedKeyCode code) {

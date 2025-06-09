@@ -1,7 +1,5 @@
 package main;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 
 import playground.Float2;
@@ -35,13 +33,16 @@ public class App extends PlaygroundApp {
   public void settings() {
     size (1080,640);
     pixelDensity(displayDensity());
-    smooth (8);
-    // noSmooth();
+    // smooth (8);
+    noSmooth();
   }
 
 	@Override
 	public void setup() {
     surface.setTitle("Botcode Editor");
+    frameRate(60);
+
+
     editor = new TextEditor(width - height, height, this);
     field = new Field(height, g);
     field.setX(editor.getWidth());
