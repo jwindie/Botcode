@@ -1,8 +1,8 @@
 package main;
 
-import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL2;
-import com.jogamp.opengl.GL2ES2;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 
 import playground.Float2;
 import playground.PlaygroundApp;
@@ -10,13 +10,18 @@ import playground.ui.Constraint;
 import playground.ui.Element;
 import playground.ui.ElementStack;
 import playground.ui.Layout;
-import processing.opengl.PGraphicsOpenGL;
+import processing.core.PFont;
+import targ.Parser;
+import targ.Program;
+import targ.Token;
+import targ.Tokenizer;
 
 public class App extends PlaygroundApp {
 
   private Field field;
   private TextEditor editor;
-
+  private PFont codeFont;
+  private PFont debugFont;
 
   public App() {
 		super();
@@ -30,8 +35,8 @@ public class App extends PlaygroundApp {
   public void settings() {
     size (1080,640);
     pixelDensity(displayDensity());
-    // smooth (8);
-    noSmooth();
+    smooth (8);
+    // noSmooth();
   }
 
 	@Override
@@ -43,25 +48,28 @@ public class App extends PlaygroundApp {
     field.setGridDimensions (15);
     field.createRobots();
 
+    codeFont = createFont("fonts/ModernDOS8x8.ttf", 8, false);
+    debugFont = createFont("fonts/CourierPrime-Regular.ttf", 16, true);
+    textFont (codeFont);
+
+    ElementStack.setGraphics (g);
+    ElementStack.setInspectorTextColor(color (0));
+    ElementStack.setInspectorTextSize (20);
+    // ElementStack.showDebug(true);
+    // ElementStack.showElementInspector(true);
     createUI();
 
-    // reloadProgram();
+    //test fiile
+    FileHandler.writeFile("test.txt", "This is a test file!");
   }
 
   void createUI() {
-    ElementStack.setGraphics (g);
-    textFont (createFont("fonts/ModernDOS8x8.ttf", 8, false));
-    // textFont(loadFont("fonts/ModernDOS8x8-140.vlw"));
-    ElementStack.setInspectorTextColor(color (255,0,0));
-    ElementStack.setInspectorTextSize (32);
-    // ElementStack.showDebug(true);
-    // ElementStack.showElementInspector(true);
 
-    Element buttonDock = new Element("button-dock", 90, 30)
+    Element buttonDock = new Element("button-dock", 120, 30)
       .moveTo(field.getX(), 0)
       .style (s -> s
         .backgroundColor(color (112, 65, 56))
-        .cornerRadius(0,0,6,0)
+        .cornerRadius(0,0,10,0)
       );
 
     Element buttonDockCorner = buttonDock.copy("button-dock-corner")
@@ -81,6 +89,7 @@ public class App extends PlaygroundApp {
         System.out.println("Clicked play Button");
         modifyTextEditorWidth(editor.getDefaultWidth());
         ElementStack.getElementById("editor-drag-handle").left (0);
+        onClickedPlayButton();
       });
     
     Element pauseButton = playButton.copy("pause-button")
@@ -91,6 +100,10 @@ public class App extends PlaygroundApp {
     Element stopButton = playButton.copy("stop-button")
       .image(loadImage("icons/icons8-stop-52.png"))
       .onClick((button) -> System.out.println("Clicked stop Button"));
+
+    Element settingsButton = playButton.copy("settings-button")
+      .image(loadImage("icons/icons8-settings-50.png"))
+      .onClick((button) -> toggleSettingsModal());
 
     buttonDock.applyLayout(Layout.horizontalLeft(CENTER));
 
@@ -104,6 +117,24 @@ public class App extends PlaygroundApp {
       .applyConstraint(Constraint.boundary())
       .parent(dragWindowDragArea, true)
       .onDrag((e) -> modifyTextEditorWidth(e.getGlobalLeft() + 8));
+
+    Element modalBlock = new Element("modal-block")
+      .isVisible(false)
+      .isInteractable(true)
+      .applyConstraint(Constraint.maxHeight())
+      .applyConstraint(Constraint.maxWidth())
+      .style(s -> s.backgroundColor(color(39, 29, 21, 180))); //rgb(39, 29, 21)
+
+    Element settingWindow = new Element("settings-modal", width * .7f, height *.7f)
+      .parent(modalBlock)
+      .isVisible(false)
+      .isInteractable(true)
+      .isDraggable(true)
+      .applyConstraint(Constraint.boundaryWithPadding(10))
+      .style(s -> s
+        .backgroundColor(color (255))
+        .cornerRadius(10)
+    );
   }
 
   void modifyTextEditorWidth(float width) {
@@ -116,16 +147,9 @@ public class App extends PlaygroundApp {
   void update() {
     float deltaTime = 1f/frameRate;
     editor.update(deltaTime);
+    field.update(deltaTime);
     ElementStack.update(new Float2(mouseX, mouseY));
 
-    // if (running) {
-    //   timer += 1/frameRate;
-    //   if (executeImmediate || timer >= executeInterval) {
-    //     if (! executeImmediate) timer -= executeInterval;
-    //     executeImmediate = false;
-    //     executeProgramNext();
-    //   } 
-    // }
   }
 
   @Override
@@ -160,22 +184,82 @@ public class App extends PlaygroundApp {
 
     float fieldDarken = map (editor.isOverSized(), 0, 400, 0, 230);
     fieldDarken = constrain(fieldDarken, 0, 230);
-    System.out.println(fieldDarken);
     if (fieldDarken > 0) {
       fill (36, 31, 29, fieldDarken);
       rectMode (CORNER);
       noStroke();
       rect (field.getX(), field.getY(), field.getWidth(), field.getHeight());
-      System.out.println(field.getWidth());
     }
 
+    textFont(codeFont);
     editor.draw (); 
 
+    textFont(debugFont);
     ElementStack.draw();
+    
+    textFont(codeFont);
   }
 
   @Override
   public void mouseDragged() {
     ElementStack.mouseDragged(new Float2(mouseX, mouseY));
+  }
+
+  public void writeProgramToFile(String contents) {
+    FileHandler.writeFile("program.targ", contents);
+  }
+
+  private void onClickedPlayButton() {
+    runProgram(loadProgram(editor.getText()));
+  }
+
+  private void toggleSettingsModal() {
+    var element = ElementStack.getElementById("settings-modal");
+    element.isVisible(!element.isVisible());
+    ElementStack.getElementById("modal-block").isVisible(element.isVisible());
+    if (element.isVisible()) {
+      element.constrainOnce(Constraint.center());
+    }
+  }
+
+  private Program loadProgram(String programRaw) {
+    // String programFile = path;
+
+    try {
+      // String programRaw = Files.readString(Path.of(sketchPath("data/" + programFile)));
+      // System.out.println("\nProcessing Program: " + programFile);
+      System.out.print("\nRAW READ");
+      System.out.println("=".repeat(50));
+      System.out.println("\n"+programRaw); // Debug print
+
+      //tokenize the program
+      ArrayList<Token> tokens = Tokenizer.tokenize(programRaw);
+      System.out.print("\nTOKENIZED");
+      System.out.println("=".repeat(50));
+      System.out.println();
+      for (var token : tokens) {
+        System.out.println(token);
+      }
+
+      //parse the program
+      System.out.print("\nPARSED");
+      System.out.println("=".repeat(50));
+      System.out.println();
+      Program program = Parser.Parse(tokens);
+      System.out.println(program);
+
+      System.out.println("=".repeat(50));
+      System.out.println();
+
+      return program;
+
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException("FUCK");
+    }
+  }
+
+  private void runProgram(Program program) {
+    field.runProgram (program);
   }
 }

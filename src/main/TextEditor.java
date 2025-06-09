@@ -54,11 +54,11 @@ public class TextEditor extends Window {
 
   public TextEditor (int width, int height, App app) {
     this.height = height;
+    this.app = app;
     this.g = app.g;
 
     //default program
-    lines.add (new StringBuilder("#Hello World"));
-    lines.add (new StringBuilder("# Type your program here"));
+    lines.add (new StringBuilder("#Type your program here..."));
     lines.add (new StringBuilder(""));
 
     rebuildOutputString();   
@@ -94,10 +94,15 @@ public class TextEditor extends Window {
     return defaultWidth;
   }
 
+  public String getText()  {
+    rebuildOutputString();
+    return builtString;
+  }
+
   public void draw() {
     //stupid AF and needs to be done on draw
     g.clip(x, y, width, height);
-    lineNumShift = g.textWidth("00") + 10 + screenPadding;
+    lineNumShift = 36 + screenPadding;
 
     //background
     g.rectMode (CORNER);
@@ -122,7 +127,7 @@ public class TextEditor extends Window {
     //line numbers
     g.fill (0, 80);
     for (int i = 0; i < lines.size(); i ++) {
-      g.text (String.format("%02d", i), x + screenPadding, y + screenPadding + (g.textLeading * i));
+      g.text (String.format("%02d", i + 1), x + screenPadding, y + screenPadding + (g.textLeading * i));
     }
 
     //draw the cursor
@@ -266,6 +271,8 @@ public class TextEditor extends Window {
     }
     builtString = stringBuilder.toString();
 
+    app.writeProgramToFile (builtString);
+
     //here check if there needs to be a scroll area
     checkContentDimensionsForScroll();
 
@@ -295,12 +302,12 @@ public class TextEditor extends Window {
     else if (keyCode == TAB) eKeyCode = EnumeratedKeyCode.TAB;
 
     if (eKeyCode != EnumeratedKeyCode.UNKNOWN) {
-      System.out.println(eKeyCode);
+      // System.out.println(eKeyCode);
       handleCodedKey(eKeyCode);
       keyIsHeld = true;
     }
     else if(String.valueOf(key).matches(regexKeyMatch)) {
-      System.out.println(key);
+      // System.out.println(key);
       typeChar(key);
       keyIsHeld = true;
     }
@@ -352,7 +359,6 @@ public class TextEditor extends Window {
           columnIndex = lines.get(lineIndex).length();
           //append the line
           lines.get(lineIndex).append(carry);
-          System.out.println("Test");
           rebuildOutputString();
           
         }
@@ -410,7 +416,7 @@ public class TextEditor extends Window {
       case RETURN: lineReturn(); break;
       case RIGHT: cursorRight(); break;
       case UP: lineUp(); break;
-      case TAB: typeString("\t");
+      case TAB: typeString("  ");
       default: //do nothing
         break;
     }

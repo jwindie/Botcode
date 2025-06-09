@@ -215,17 +215,33 @@ public class Element implements UIConstants {
   public boolean isSibling(Element other) {return parent == other.parent;}
   
   /**Returns true if the supplid point is within the UI element's bounds. */
-  public boolean isUnderPointer (float x, float y) {
+  public Element isUnderPointer (float x, float y) {
     return isUnderPointer(new Float2(x, y));
   }
 
   /**Returns true if the supplid point is within the UI element's bounds. */
-  public boolean isUnderPointer (Float2 point) {
-    return 
+  public Element isUnderPointer (Float2 point) {
+    if (
       point.x > globalPosition.x && 
       point.x < globalPosition.x + size.x && 
       point.y > globalPosition.y && 
-      point.y < globalPosition.y + size.y;
+      point.y < globalPosition.y + size.y) {
+        //currently under pointer
+        //iterate reverse to check the children
+        //on first find return the element
+        for (int i  = children.size() - 1; i >= 0; i --) {
+          
+          Element child = children.get(i);
+          if (child.isDisabled() || !child.isVisible()) continue;
+          
+          var hovered = child.isUnderPointer(point);
+          if (hovered != null) return hovered;
+        }
+        
+        if (this.isInteractable()) return this;
+      }
+      
+      return null;
   }
 
   //#region Setters

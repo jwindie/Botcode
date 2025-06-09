@@ -1,7 +1,7 @@
 package targ.instructions;
 
-import main.App;
 import targ.Command;
+import targ.Interpretor;
 import targ.Literal;
 
 public class SwapInstruction extends Instruction {
@@ -13,7 +13,7 @@ public class SwapInstruction extends Instruction {
   }
 
   @Override
-  public void execute(App interpretor) {
+  public void execute(Interpretor interpretor) {
     interpretor.swap(target);
   }
 

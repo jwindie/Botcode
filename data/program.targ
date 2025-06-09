@@ -1,4 +1,16 @@
-# simple move forward then move backward
-SWAP orange
-LEFT
-FORWARD
+FUNC kota
+  LOOP 4
+    FORWARD 3
+    RIGHT
+  END
+  LOOP 4
+    LEFT
+  END
+END
+
+FORWARD 4
+RUN kota
+ACTIVATE
+RIGHT 2
+FORWARD 3
+RUN kota

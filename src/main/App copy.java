@@ -26,7 +26,7 @@
 //   boolean running;
 //   boolean executeImmediate = false;
 //   boolean showTextEditor = true;
-//   String program;
+//   
 //   TextEditor editor;
 //   Field field;
 //   float time;

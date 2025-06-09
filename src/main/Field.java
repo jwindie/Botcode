@@ -1,13 +1,29 @@
 package main;
 
-import processing.core.PGraphics;
-import targ.Literal;
+import java.util.ArrayList;
+import java.util.Stack;
 
-public class Field extends Window {
+import processing.core.PGraphics;
+
+import targ.instructions.Instruction;
+import targ.Interpretor;
+import targ.Literal;
+import targ.Program;
+
+public class Field extends Window implements Interpretor {
 
   int gridDimensions;
   float gridSpacing;
   boolean isBounded = true;
+  boolean isRunning;
+  float timer;
+  float executeInterval = .3f;
+  boolean executeImmediate;
+
+  Program program;
+  Stack<ArrayList<Instruction>> callStack = new Stack<>();
+  ArrayList<Integer> callStackIndex = new ArrayList<>();
+  int instructionIndex;
 
   //robots
   Robot[] robots;
@@ -19,6 +35,17 @@ public class Field extends Window {
     this.width = width;
     this.height = width;
     this.g = g;
+  }
+
+  public void update(float deltaTime) {
+    if (isRunning) {
+      timer += deltaTime;
+      if (executeImmediate || timer >= executeInterval) {
+        if (! executeImmediate) timer -= executeInterval;
+        executeImmediate = false;
+        executeProgramNext();
+      } 
+    }
   }
 
   public void draw (float x, float y) {
@@ -112,7 +139,9 @@ public class Field extends Window {
     g.rotate (App.radians(robot.direction * 90));
 
     g.noStroke ();
-    g.rect (0, 0, gridSpacing * .9f, gridSpacing * .9f, gridSpacing*.1f);
+    float corner = gridSpacing*.1f;
+    g.rect (0, (-gridSpacing * .9f) / 4, gridSpacing * .9f, (gridSpacing * .9f) / 2, corner);
+    g.circle(0, 0, gridSpacing * .9f);
 
     g.stroke(20);
     g.strokeWeight (6);
@@ -147,28 +176,28 @@ public class Field extends Window {
     mainRobot = robots[0];
   }
 
-  public void moveForward() {
+  public void forward() {
     mainRobot.moveForward();
     for(Robot robot : mainRobot.linkedRobots) {
       robot.moveForward();
     }
   }
 
-  public void moveReverse() {
+  public void reverse() {
     mainRobot.moveReverse();
     for(Robot robot : mainRobot.linkedRobots) {
       robot.moveReverse();
     }
   }
 
-  public void turnLeft() {
+  public void left() {
     mainRobot.turnLeft();
     for(Robot robot : mainRobot.linkedRobots) {
       robot.turnLeft();
     }
   }
 
-  public void turnRight() {
+  public void right() {
     mainRobot.turnRight();
     for(Robot robot : mainRobot.linkedRobots) {
       robot.turnRight();
@@ -214,8 +243,7 @@ public class Field extends Window {
 
   public boolean validatePosition(int x, int y) {
     for (int i = 0; i < robots.length; i ++) {
-      if (occupiedPositions[i][0] == x) return false;
-      if (occupiedPositions[i][1] == y) return false;
+      if (occupiedPositions[i][0] == x && occupiedPositions[i][1] == y) return false;
     }
 
     //also check to make sure the point is within the fields boundaries
@@ -225,5 +253,74 @@ public class Field extends Window {
     }
 
     return true;
+  }
+
+  public void runProgram (Program program) {
+    resetRobots();
+    instructionIndex = 0;
+    timer = 0;
+    isRunning = true;
+    this.program= program;
+  }
+
+  /**Takes a look at the next instruction in the program and does it */
+  public void executeProgramNext() {
+    //check if we are in a function call, if so, dothose instructions instead
+    if (callStack.size() > 0) {
+      int stackIndex = callStackIndex.getLast();
+
+      //check if we are at the end of the stack, if not execute
+      if (stackIndex < callStack.peek().size()){
+        callStack.peek().get(stackIndex).execute(this);
+        System.out.println(callStack.peek().get(stackIndex));
+        callStackIndex.set(callStackIndex.size() - 1, stackIndex + 1);
+      }
+      else endFunc();
+    }
+    //get the program instruction at line index
+    else if (instructionIndex < program.instructions.size()){
+      program.instructions.get(instructionIndex).execute(this);
+      System.out.println(program.instructions.get(instructionIndex));
+      instructionIndex ++;
+    }
+    else endProgram();
+  }
+
+  public void endFunc(){
+    //simple pop the stack and remove last for the index
+    callStack.pop();
+    callStackIndex.removeLast();
+    executeImmediate = true;
+  }
+
+  public void runFunc(String pointer){
+    //add to the stack
+    callStack.push(program.funcMap.get(pointer));
+    callStackIndex.addLast(0);
+    executeImmediate = true;
+  }
+
+    public void startProgram() {
+    instructionIndex = 0;
+    isRunning = true;
+  }
+
+  public void endProgram() {
+    isRunning = false;
+    callStack.clear();
+    callStackIndex.clear();
+    timer = 0;
+  }
+
+  @Override
+  public void move(Literal dir) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'move'");
+  }
+
+  @Override
+  public void turn(Literal dir) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'turn'");
   }
 }

@@ -1,7 +1,7 @@
 package targ.instructions;
 
-import main.App;
 import targ.Command;
+import targ.Interpretor;
 
 public abstract class Instruction {
   protected final Command command;
@@ -12,7 +12,7 @@ public abstract class Instruction {
     this.line = line;
   }
 
-  public abstract void execute(App interpretor);
+  public abstract void execute(Interpretor interpretor);
 
   @Override
   public String toString() {

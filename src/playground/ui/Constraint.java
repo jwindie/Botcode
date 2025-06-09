@@ -161,10 +161,10 @@ public class Constraint implements UIConstants {
       }
       else if (args.length == 4)  {
         g.rect(
-          e.parent.getLeft() + args[0],
-          e.parent.getTop() + args[1],
-          e.parent.getWidth() - (args[0] + args[2]),
-          e.parent.getHeight() - (args[1] + args[3])
+          e.getContainerLeft() + args[0],
+          e.getContainerTop() + args[1],
+          e.getContainerWidth() - (args[0] + args[2]),
+          e.getContainerHeight() - (args[1] + args[3])
         );
       }
     }

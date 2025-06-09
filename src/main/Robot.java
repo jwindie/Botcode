@@ -38,6 +38,7 @@ public class Robot {
       x = _x;
       y = _y;
     }
+    else System.out.println("Invalid position");
   }
 
   public void moveReverse() {

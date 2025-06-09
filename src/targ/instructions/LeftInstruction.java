@@ -1,7 +1,7 @@
 package targ.instructions;
 
-import main.App;
 import targ.Command;
+import targ.Interpretor;
 
 public class LeftInstruction extends Instruction {
 
@@ -10,7 +10,7 @@ public class LeftInstruction extends Instruction {
   }
 
   @Override
-  public void execute(App interpretor) {
-    interpretor.turnLeft();
+  public void execute(Interpretor interpretor) {
+    interpretor.left();
   }
 }

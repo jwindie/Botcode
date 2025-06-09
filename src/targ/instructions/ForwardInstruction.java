@@ -1,7 +1,7 @@
 package targ.instructions;
 
-import main.App;
 import targ.Command;
+import targ.Interpretor;
 
 public class ForwardInstruction extends Instruction {
 
@@ -10,7 +10,7 @@ public class ForwardInstruction extends Instruction {
   }
 
   @Override
-  public void execute(App interpretor) {
-    interpretor.moveForward();
+  public void execute(Interpretor interpretor) {
+    interpretor.forward();
   }
 }

@@ -221,9 +221,14 @@ public final class ElementStack implements PConstants {
     for (int i = ElementStack.size() - 1; i >= 0; i --) {
       Element e = ElementStack.get(i);
 
-      if (e.isDisabled() || !e.isInteractable()) continue;
-      if (e.isUnderPointer (mousePosition)) {
-        (hoveredElement = e).isHovered(true);
+      if (e.isDisabled() || !e.isVisible()) continue;
+      
+      //call function recursively on its children
+      Element hovered = e.isUnderPointer(mousePosition);
+      
+      //if we found something, stop looking
+      if (hovered != null){
+        hoveredElement = hovered; 
         break;
       }
     }
@@ -242,4 +247,6 @@ public final class ElementStack implements PConstants {
       pressedElement = null;
     }
   }
+
+  
 }
